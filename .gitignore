@@ -1,0 +1,13 @@
+.venv/
+fasta/
+.venv-broken/
+
+__pycache__/
+*.pyc
+.pytest_cache/
+
+results/*.csv
+
+.vscode/
+
+/宏基因组种水平物种丰度.csv

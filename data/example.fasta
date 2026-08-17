@@ -1,0 +1,6 @@
+>seq1 normal_sequence
+ATGCGCTA
+>seq2 sequence_with_N
+ATNNGC
+>seq3 sequence_with_invalid_character
+ATGCX
