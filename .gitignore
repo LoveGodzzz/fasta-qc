@@ -8,6 +8,7 @@ __pycache__/
 
 results/*.csv
 results/*.json
+results/*.fasta
 
 .vscode/
 

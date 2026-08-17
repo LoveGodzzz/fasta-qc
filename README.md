@@ -16,6 +16,7 @@
 - 显示失败原因
 - 导出 CSV 报告
 - 导出 JSON 报告
+- 导出通过检查的 FASTA 文件
 - 自动测试
 
 ## 安装
@@ -67,9 +68,20 @@ python -m app.cli data\example.fasta `
 | `--min-gc` | 最低 GC 比例 | 0 |
 | `--max-gc` | 最高 GC 比例 | 100 |
 | `--json-output` | JSON 输出路径 | 不输出 |
+| `--filtered-output` | 通过检查的 FASTA 输出路径 | 不输出 |
 | `-o, --output` | CSV 输出路径 | 不输出 |
 
-## 测试
+
+## 导出通过检查的 FASTA
+
+```powershell
+python -m app.cli data/example.fasta `
+  --min-length 7 `
+  --max-n-percent 20 `
+  --filtered-output results/passed.fasta
+
+
+## 测试并提交
 
 ```powershell
 python -m pytest -q

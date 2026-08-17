@@ -4,6 +4,8 @@ import json
 import sys
 from pathlib import Path
 
+from Bio import SeqIO
+
 from app.analysis import analyze_fasta
 
 
@@ -63,6 +65,32 @@ def save_json(results: list, output_path: str) -> None:
         json.dump(data, file, ensure_ascii=False, indent=2)
 
     print(f"\nJSON 报告已保存：{output}")
+    
+
+def save_filtered_fasta(
+    input_path: str,
+    results: list,
+    output_path: str,
+) -> None:
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    records = SeqIO.parse(input_path, "fasta")
+
+    passing_records = (
+        record
+        for record, result in zip(records, results)
+        if result.is_valid
+    )
+
+    written_count = SeqIO.write(
+        passing_records,
+        output,
+        "fasta",
+    )
+
+    print(f"\n过滤后的 FASTA 已保存：{output}")
+    print(f"写入通过序列：{written_count}")
 
 
 def main() -> int:
@@ -82,6 +110,10 @@ def main() -> int:
     parser.add_argument(
         "--json-output",
         help="输出 JSON 文件路径",
+    )
+    parser.add_argument(
+        "--filtered-output",
+        help="输出通过质量检查的 FASTA 文件路径",
     )
     parser.add_argument(
         "--min-length",
@@ -184,7 +216,13 @@ def main() -> int:
 
     if args.json_output:
         save_json(results, args.json_output)
-
+    
+    if args.filtered_output:
+        save_filtered_fasta(
+            args.input,
+            results,
+            args.filtered_output,
+        )
     return 0
 
 
