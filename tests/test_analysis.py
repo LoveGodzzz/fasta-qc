@@ -116,3 +116,40 @@ def test_analyze_fasta_applies_thresholds(
     assert results[1].sequence_id == "many_n"
     assert results[1].is_valid is False
     assert "N 比例超过要求" in results[1].failure_reasons
+    
+    
+def test_min_gc_threshold() -> None:
+    result = analyze_sequence(
+        "low_gc",
+        "AAAA",
+        min_gc_percent=40,
+    )
+
+    assert result.gc_percent == 0.0
+    assert result.is_valid is False
+    assert "GC 比例低于要求" in result.failure_reasons
+
+
+def test_max_gc_threshold() -> None:
+    result = analyze_sequence(
+        "high_gc",
+        "GGGG",
+        max_gc_percent=60,
+    )
+
+    assert result.gc_percent == 100.0
+    assert result.is_valid is False
+    assert "GC 比例超过要求" in result.failure_reasons
+
+
+def test_gc_boundary_values_pass() -> None:
+    result = analyze_sequence(
+        "boundary",
+        "ATGC",
+        min_gc_percent=50,
+        max_gc_percent=50,
+    )
+
+    assert result.gc_percent == 50.0
+    assert result.failure_reasons == ""
+    assert result.is_valid is True

@@ -67,6 +67,21 @@ def main() -> int:
         help="允许的最大 N 比例，默认 100",
     )
 
+    parser.add_argument(
+        "--min-gc",
+        type=float,
+        default=0.0,
+        help="允许的最低 GC 比例，默认 0",
+    )
+    
+    parser.add_argument(
+        "--max-gc",
+        type=float,
+        default=100.0,
+        help="允许的最高 GC 比例，默认 100",
+    )
+
+
     args = parser.parse_args()
 
     if args.min_length < 0:
@@ -74,12 +89,23 @@ def main() -> int:
 
     if not 0 <= args.max_n_percent <= 100:
         parser.error("--max-n-percent 必须在 0 到 100 之间")
+    
+    if not 0 <= args.min_gc <= 100:
+        parser.error("--min-gc 必须在 0 到 100 之间")
+
+    if not 0 <= args.max_gc <= 100:
+        parser.error("--max-gc 必须在 0 到 100 之间")
+        
+    if args.min_gc > args.max_gc:
+        parser.error("--min-gc 不能大于 --max-gc")
 
     try:
         results = analyze_fasta(
             args.input,
             min_length=args.min_length,
             max_n_percent=args.max_n_percent,
+            min_gc_percent=args.min_gc,
+            max_gc_percent=args.max_gc,
         )
     except (FileNotFoundError, ValueError) as error:
         print(f"错误：{error}", file=sys.stderr)
@@ -89,6 +115,7 @@ def main() -> int:
     print("=" * 100)
     print(f"最短长度要求：{args.min_length}")
     print(f"最大 N 比例：{args.max_n_percent}%")
+    print(f"GC 比例范围：{args.min_gc}% - {args.max_gc}%")
     print("-" * 100)
 
     print(

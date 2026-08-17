@@ -24,6 +24,8 @@ def analyze_sequence(
     sequence: str,
     min_length: int = 0,
     max_n_percent: float = 100.0,
+    min_gc_percent: float = 0.0,
+    max_gc_percent: float = 100.0,
 ) -> SequenceQC:
     sequence = "".join(sequence.upper().split())
     length = len(sequence)
@@ -54,7 +56,17 @@ def analyze_sequence(
         failure_reasons.append(
             f"N 比例超过要求：{n_percent}% > {max_n_percent}%"
         )
-
+    
+    if gc_percent < min_gc_percent:
+        failure_reasons.append(
+        f"GC 比例低于要求：{gc_percent}% < {min_gc_percent}%"
+    )
+    
+    if gc_percent > max_gc_percent:
+        failure_reasons.append(
+        f"GC 比例超过要求：{gc_percent}% > {max_gc_percent}%"
+    )
+    
     return SequenceQC(
         sequence_id=sequence_id,
         length=length,
@@ -71,6 +83,8 @@ def analyze_fasta(
     path: str | Path,
     min_length: int = 0,
     max_n_percent: float = 100.0,
+    min_gc_percent: float = 0.0,
+    max_gc_percent: float = 100.0,
 ) -> list[SequenceQC]:
     fasta_path = Path(path)
 
@@ -85,7 +99,9 @@ def analyze_fasta(
             sequence=str(record.seq),
             min_length=min_length,
             max_n_percent=max_n_percent,
-        )
+            min_gc_percent=min_gc_percent,
+            max_gc_percent=max_gc_percent,
+)
         results.append(result)
 
     if not results:
