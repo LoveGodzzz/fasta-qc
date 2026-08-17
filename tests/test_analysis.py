@@ -165,3 +165,23 @@ def test_iupac_ambiguous_bases_are_allowed() -> None:
     assert result.invalid_chars == ""
     assert result.failure_reasons == ""
     assert result.is_valid is True
+
+
+def test_duplicate_sequence_ids_fail(tmp_path: Path) -> None:
+    fasta_file = tmp_path / "duplicate.fasta"
+    fasta_file.write_text(
+        ">same\nATGC\n>same\nGGCC\n>unique\nAATT\n",
+        encoding="utf-8",
+    )
+
+    results = analyze_fasta(fasta_file)
+
+    assert len(results) == 3
+
+    assert results[0].is_valid is False
+    assert "序列 ID 重复：same" in results[0].failure_reasons
+
+    assert results[1].is_valid is False
+    assert "序列 ID 重复：same" in results[1].failure_reasons
+
+    assert results[2].is_valid is True

@@ -1,3 +1,4 @@
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -60,12 +61,12 @@ def analyze_sequence(
     if gc_percent < min_gc_percent:
         failure_reasons.append(
         f"GC 比例低于要求：{gc_percent}% < {min_gc_percent}%"
-    )
+        )
     
     if gc_percent > max_gc_percent:
         failure_reasons.append(
         f"GC 比例超过要求：{gc_percent}% > {max_gc_percent}%"
-    )
+        )
     
     return SequenceQC(
         sequence_id=sequence_id,
@@ -101,10 +102,27 @@ def analyze_fasta(
             max_n_percent=max_n_percent,
             min_gc_percent=min_gc_percent,
             max_gc_percent=max_gc_percent,
-)
+        )
         results.append(result)
 
     if not results:
         raise ValueError("FASTA 文件中没有找到序列")
+
+    id_counts = Counter(
+        result.sequence_id for result in results
+    )
+
+    for result in results:
+        if id_counts[result.sequence_id] > 1:
+            duplicate_reason = (
+                f"序列 ID 重复：{result.sequence_id}"
+            )
+
+            if result.failure_reasons:
+                result.failure_reasons += f"；{duplicate_reason}"
+            else:
+                result.failure_reasons = duplicate_reason
+
+            result.is_valid = False
 
     return results
