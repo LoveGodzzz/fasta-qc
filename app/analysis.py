@@ -13,11 +13,18 @@ class SequenceQC:
     length: int
     gc_percent: float
     n_count: int
+    n_percent: float
     invalid_chars: str
+    failure_reasons: str
     is_valid: bool
 
 
-def analyze_sequence(sequence_id: str, sequence: str) -> SequenceQC:
+def analyze_sequence(
+    sequence_id: str,
+    sequence: str,
+    min_length: int = 0,
+    max_n_percent: float = 100.0,
+) -> SequenceQC:
     sequence = "".join(sequence.upper().split())
     length = len(sequence)
 
@@ -26,18 +33,45 @@ def analyze_sequence(sequence_id: str, sequence: str) -> SequenceQC:
     invalid_chars = sorted(set(sequence) - ALLOWED_DNA_CHARS)
 
     gc_percent = round(gc_count / length * 100, 2) if length else 0.0
+    n_percent = round(n_count / length * 100, 2) if length else 0.0
+
+    failure_reasons = []
+
+    if length == 0:
+        failure_reasons.append("空序列")
+
+    if invalid_chars:
+        failure_reasons.append(
+            f"包含非法字符：{''.join(invalid_chars)}"
+        )
+
+    if length < min_length:
+        failure_reasons.append(
+            f"长度小于要求：{length} < {min_length}"
+        )
+
+    if n_percent > max_n_percent:
+        failure_reasons.append(
+            f"N 比例超过要求：{n_percent}% > {max_n_percent}%"
+        )
 
     return SequenceQC(
         sequence_id=sequence_id,
         length=length,
         gc_percent=gc_percent,
         n_count=n_count,
+        n_percent=n_percent,
         invalid_chars="".join(invalid_chars),
-        is_valid=length > 0 and not invalid_chars,
+        failure_reasons="；".join(failure_reasons),
+        is_valid=len(failure_reasons) == 0,
     )
 
 
-def analyze_fasta(path: str | Path) -> list[SequenceQC]:
+def analyze_fasta(
+    path: str | Path,
+    min_length: int = 0,
+    max_n_percent: float = 100.0,
+) -> list[SequenceQC]:
     fasta_path = Path(path)
 
     if not fasta_path.exists():
@@ -49,6 +83,8 @@ def analyze_fasta(path: str | Path) -> list[SequenceQC]:
         result = analyze_sequence(
             sequence_id=record.id,
             sequence=str(record.seq),
+            min_length=min_length,
+            max_n_percent=max_n_percent,
         )
         results.append(result)
 

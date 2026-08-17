@@ -15,7 +15,9 @@ def save_csv(results: list, output_path: str) -> None:
         "length",
         "gc_percent",
         "n_count",
+        "n_percent",
         "invalid_chars",
+        "failure_reasons",
         "is_valid",
     ]
 
@@ -29,7 +31,9 @@ def save_csv(results: list, output_path: str) -> None:
                 "length": result.length,
                 "gc_percent": result.gc_percent,
                 "n_count": result.n_count,
+                "n_percent": result.n_percent,
                 "invalid_chars": result.invalid_chars,
+                "failure_reasons": result.failure_reasons,
                 "is_valid": result.is_valid,
             })
 
@@ -40,49 +44,81 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="检查 DNA FASTA 文件的基本质量指标"
     )
-    parser.add_argument("input", help="输入 FASTA 文件路径")
+
+    parser.add_argument(
+        "input",
+        help="输入 FASTA 文件路径",
+    )
     parser.add_argument(
         "-o",
         "--output",
         help="输出 CSV 文件路径",
     )
+    parser.add_argument(
+        "--min-length",
+        type=int,
+        default=0,
+        help="允许的最短序列长度，默认不限制",
+    )
+    parser.add_argument(
+        "--max-n-percent",
+        type=float,
+        default=100.0,
+        help="允许的最大 N 比例，默认 100",
+    )
 
     args = parser.parse_args()
 
+    if args.min_length < 0:
+        parser.error("--min-length 不能小于 0")
+
+    if not 0 <= args.max_n_percent <= 100:
+        parser.error("--max-n-percent 必须在 0 到 100 之间")
+
     try:
-        results = analyze_fasta(args.input)
+        results = analyze_fasta(
+            args.input,
+            min_length=args.min_length,
+            max_n_percent=args.max_n_percent,
+        )
     except (FileNotFoundError, ValueError) as error:
         print(f"错误：{error}", file=sys.stderr)
         return 1
 
     print("\nFASTA 质量检查结果")
-    print("=" * 65)
+    print("=" * 100)
+    print(f"最短长度要求：{args.min_length}")
+    print(f"最大 N 比例：{args.max_n_percent}%")
+    print("-" * 100)
+
     print(
         f"{'ID':<15}"
         f"{'长度':>8}"
-        f"{'GC%':>10}"
-        f"{'N数量':>10}"
-        f"{'非法字符':>12}"
-        f"{'结果':>10}"
+        f"{'GC%':>9}"
+        f"{'N':>7}"
+        f"{'N%':>9}"
+        f"{'结果':>9}"
+        f"  失败原因"
     )
-    print("-" * 65)
+    print("-" * 100)
 
     for result in results:
-        invalid = result.invalid_chars or "-"
-        status = "通过" if result.is_valid else "失败"
+        status = "PASS" if result.is_valid else "FAIL"
+        reason = result.failure_reasons or "-"
 
         print(
             f"{result.sequence_id:<15}"
             f"{result.length:>8}"
-            f"{result.gc_percent:>10.2f}"
-            f"{result.n_count:>10}"
-            f"{invalid:>12}"
-            f"{status:>10}"
+            f"{result.gc_percent:>9.2f}"
+            f"{result.n_count:>7}"
+            f"{result.n_percent:>9.2f}"
+            f"{status:>9}"
+            f"  {reason}"
         )
 
     valid_count = sum(result.is_valid for result in results)
 
-    print("-" * 65)
+    print("-" * 100)
     print(f"序列总数：{len(results)}")
     print(f"通过数量：{valid_count}")
     print(f"失败数量：{len(results) - valid_count}")

@@ -64,3 +64,55 @@ def test_empty_fasta(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="没有找到序列"):
         analyze_fasta(empty_file)
+        
+
+def test_min_length_threshold() -> None:
+    result = analyze_sequence(
+        "short",
+        "ATGC",
+        min_length=5,
+    )
+
+    assert result.length == 4
+    assert result.is_valid is False
+    assert "长度小于要求：4 < 5" in result.failure_reasons
+
+
+def test_max_n_percent_threshold() -> None:
+    result = analyze_sequence(
+        "many_n",
+        "ATNNGC",
+        max_n_percent=20,
+    )
+
+    assert result.n_count == 2
+    assert result.n_percent == 33.33
+    assert result.is_valid is False
+    assert "N 比例超过要求" in result.failure_reasons
+
+
+def test_analyze_fasta_applies_thresholds(
+    tmp_path: Path,
+) -> None:
+    fasta_file = tmp_path / "thresholds.fasta"
+    fasta_file.write_text(
+        ">short\nATGC\n"
+        ">many_n\nATNNGC\n",
+        encoding="utf-8",
+    )
+
+    results = analyze_fasta(
+        fasta_file,
+        min_length=5,
+        max_n_percent=20,
+    )
+
+    assert len(results) == 2
+
+    assert results[0].sequence_id == "short"
+    assert results[0].is_valid is False
+    assert "长度小于要求" in results[0].failure_reasons
+
+    assert results[1].sequence_id == "many_n"
+    assert results[1].is_valid is False
+    assert "N 比例超过要求" in results[1].failure_reasons
