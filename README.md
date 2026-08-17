@@ -7,7 +7,8 @@
 - 读取多序列 FASTA 文件
 - 计算序列长度和 GC 含量
 - 统计 N 数量和 N 比例
-- 检查非法字符
+- 支持标准 IUPAC DNA 模糊碱基
+- 检查 IUPAC 规则之外的非法字符
 - 设置最短序列长度
 - 设置最大 N 比例
 - 设置最低和最高 GC 比例
@@ -75,8 +76,11 @@ python -m pytest -q
 允许的 DNA 字符：
 
 ```text
-A C G T N
+A C G T R Y S W K M B D H V N
 ```
+R、Y、S、W、K、M、B、D、H、V 和 N 是合法的 IUPAC 模糊碱基。
+GC 比例目前只统计明确的 G 和 C；模糊碱基不计入 GC 数量。
+例如 X、Z、数字和特殊符号仍会被判定为非法字符。
 
 以下情况会判定为失败：
 

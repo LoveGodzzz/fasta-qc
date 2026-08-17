@@ -153,3 +153,15 @@ def test_gc_boundary_values_pass() -> None:
     assert result.gc_percent == 50.0
     assert result.failure_reasons == ""
     assert result.is_valid is True
+    
+def test_iupac_ambiguous_bases_are_allowed() -> None:
+    result = analyze_sequence(
+        "iupac",
+        "ACGTRYSWKMBDHVN",
+    )
+
+    assert result.length == 15
+    assert result.n_count == 1
+    assert result.invalid_chars == ""
+    assert result.failure_reasons == ""
+    assert result.is_valid is True

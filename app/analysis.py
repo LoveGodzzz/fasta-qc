@@ -4,7 +4,7 @@ from pathlib import Path
 from Bio import SeqIO
 
 
-ALLOWED_DNA_CHARS = set("ACGTN")
+ALLOWED_DNA_CHARS = set("ACGTRYSWKMBDHVN")
 
 
 @dataclass
