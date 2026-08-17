@@ -15,6 +15,7 @@
 - 设置最低和最高 GC 比例
 - 显示失败原因
 - 导出 CSV 报告
+- 导出 JSON 报告
 - 自动测试
 
 ## 安装
@@ -42,6 +43,7 @@ python -m app.cli data\example.fasta `
   --max-n-percent 20 `
   --min-gc 40 `
   --max-gc 60
+  --json-output results/report.json
 ```
 
 ## 导出 CSV
@@ -64,6 +66,7 @@ python -m app.cli data\example.fasta `
 | `--max-n-percent` | 最大 N 比例 | 100 |
 | `--min-gc` | 最低 GC 比例 | 0 |
 | `--max-gc` | 最高 GC 比例 | 100 |
+| `--json-output` | JSON 输出路径 | 不输出 |
 | `-o, --output` | CSV 输出路径 | 不输出 |
 
 ## 测试

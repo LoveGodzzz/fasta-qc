@@ -1,5 +1,6 @@
 import argparse
 import csv
+import json
 import sys
 from pathlib import Path
 
@@ -38,13 +39,37 @@ def save_csv(results: list, output_path: str) -> None:
             })
 
     print(f"\nCSV 报告已保存：{output}")
+    
+
+def save_json(results: list, output_path: str) -> None:
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    data = [
+        {
+            "sequence_id": result.sequence_id,
+            "length": result.length,
+            "gc_percent": result.gc_percent,
+            "n_count": result.n_count,
+            "n_percent": result.n_percent,
+            "invalid_chars": result.invalid_chars,
+            "failure_reasons": result.failure_reasons,
+            "is_valid": result.is_valid,
+        }
+        for result in results
+    ]
+
+    with output.open("w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+
+    print(f"\nJSON 报告已保存：{output}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="检查 DNA FASTA 文件的基本质量指标"
     )
-
+    
     parser.add_argument(
         "input",
         help="输入 FASTA 文件路径",
@@ -53,6 +78,10 @@ def main() -> int:
         "-o",
         "--output",
         help="输出 CSV 文件路径",
+    )
+    parser.add_argument(
+        "--json-output",
+        help="输出 JSON 文件路径",
     )
     parser.add_argument(
         "--min-length",
@@ -152,6 +181,9 @@ def main() -> int:
 
     if args.output:
         save_csv(results, args.output)
+
+    if args.json_output:
+        save_json(results, args.json_output)
 
     return 0
 
