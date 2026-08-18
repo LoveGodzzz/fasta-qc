@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import sys
 import tempfile
 from io import StringIO
 from pathlib import Path
@@ -8,9 +9,15 @@ from pathlib import Path
 import streamlit as st
 from Bio import SeqIO
 
-from app.analysis import analyze_fasta
-from app.protein import analyze_protein_fasta
 
+APP_DIR = Path(__file__).resolve().parent
+
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
+
+
+from analysis import analyze_fasta
+from protein import analyze_protein_fasta
 
 st.set_page_config(
     page_title="FASTA 质量检查器",
