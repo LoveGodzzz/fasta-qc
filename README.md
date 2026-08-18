@@ -18,6 +18,11 @@
 - 导出 JSON 报告
 - 导出通过检查的 FASTA 文件
 - 自动测试
+- 支持 DNA FASTA 检查
+- 支持蛋白质 FASTA 检查
+- 提供 Streamlit 网页界面
+- 网页中可设置质量阈值
+- 网页中可下载 CSV、JSON 和 FASTA 结果
 
 ## 安装
 
@@ -86,6 +91,12 @@ python -m app.cli data/example.fasta `
 ```powershell
 python -m pytest -q
 ```
+
+## 启动网页界面
+
+```powershell
+python -m streamlit run app/web_app.py
+
 
 ## 当前规则
 
